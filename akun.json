@@ -3,5 +3,10 @@
     "username": "ana",
     "password_hash": "849f4d25ef0215fec8dffb9419eaaf8bc1fb5c97bfccf147188362f702cb6d4b",
     "salt": "f368b1a9b9a85554829f7a487b69755a"
+  },
+  {
+    "username": "TITIK",
+    "password_hash": "e939a52e2af11a0d86faf20808ce50d0a44b397529d3150bf8d54e5adcbf67df",
+    "salt": "35474c40c1ca86fc11dfceffaa216c6c"
   }
 ]

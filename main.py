@@ -22,5 +22,5 @@ def main():
             print("Pilihan tidak valid. Silakan pilih 0, 1, atau 2.")
 
 
-if __name__ == "__main__":
-    main()
+#if __name__ == "__main__":
+#    main()

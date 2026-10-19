@@ -4,13 +4,13 @@ import json
 import secrets
 from pathlib import Path
 
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 
 
 FILE_JSON = Path(__file__).with_name("akun.json")
 FILE_EXCEL = Path(__file__).with_name("akun.xlsx")
 ITERASI_HASH = 600_000
-HEADER_EXCEL = ("username", "password_hash", "salt")
+HEADER_EXCEL_TERBACA = ("username", "password")
 
 
 def _buat_hash_password(password, salt):
@@ -19,17 +19,36 @@ def _buat_hash_password(password, salt):
     ).hex()
 
 
-def _simpan_excel(akun):
+def _simpan_excel(akun, username_baru, password_baru):
+    password_tersimpan = {}
+    if FILE_EXCEL.exists():
+        workbook_lama = load_workbook(FILE_EXCEL, read_only=True, data_only=True)
+        try:
+            worksheet_lama = workbook_lama.active
+            baris = worksheet_lama.iter_rows(values_only=True)
+            header = next(baris, ())
+            if "username" in header and "password" in header:
+                kolom_username = header.index("username")
+                kolom_password = header.index("password")
+                for data in baris:
+                    if data[kolom_username] is not None:
+                        password_tersimpan[str(data[kolom_username]).casefold()] = (
+                            data[kolom_password] or ""
+                        )
+        finally:
+            workbook_lama.close()
+
+    password_tersimpan[username_baru.casefold()] = password_baru
     workbook = Workbook()
     worksheet = workbook.active
     worksheet.title = "Akun"
-    worksheet.append(HEADER_EXCEL)
+    worksheet.append(HEADER_EXCEL_TERBACA)
 
     for data in akun:
-        worksheet.append(
-            (data["username"], data["password_hash"], data["salt"])
-        )
-        worksheet.cell(row=worksheet.max_row, column=1).data_type = "s"
+        username = data["username"]
+        worksheet.append((username, password_tersimpan.get(username.casefold(), "")))
+        for cell in worksheet[worksheet.max_row]:
+            cell.data_type = "s"
 
     workbook.save(FILE_EXCEL)
 
@@ -73,5 +92,6 @@ def tambah_akun():
     with FILE_JSON.open("w", encoding="utf-8") as file:
         json.dump(akun, file, ensure_ascii=False, indent=2)
 
-    _simpan_excel(akun)
+    _simpan_excel(akun, username, password)
     print("Data akun berhasil disimpan ke akun.json dan akun.xlsx.")
+    print("Catatan: password di akun.xlsx tersimpan sebagai teks biasa.")
